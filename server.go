@@ -16,7 +16,7 @@ func GetHealtEndPoint(writer http.ResponseWriter, request *http.Request) {
 	fmt.Fprintln(writer, "not implemented yet!")
 }
 
-func GetAllMailsEndPoint(writer http.ResponseWriter, request *http.Request) {
+func GetQueryMailsEndPoint(writer http.ResponseWriter, request *http.Request) {
 	fmt.Fprintln(writer, "not implemented yet!")
 }
 
