@@ -12,8 +12,8 @@ import (
 	"os"
 )
 
-func GetHealtEndPoint(writer http.ResponseWriter, request *http.Request) {
-	fmt.Fprintln(writer, "not implemented yet!")
+func GetHealthEndPoint(writer http.ResponseWriter, request *http.Request) {
+	respondWithJson(writer, http.StatusOK, map[string]string{"status": "200", "message": "Service operational"})
 }
 
 func GetQueryMailsEndPoint(writer http.ResponseWriter, request *http.Request) {
@@ -21,7 +21,21 @@ func GetQueryMailsEndPoint(writer http.ResponseWriter, request *http.Request) {
 }
 
 func PostMailEndPoint(writer http.ResponseWriter, request *http.Request) {
-	fmt.Fprintln(writer, "not implemented yet!")
+	defer request.Body.Close()
+	var mail models.Mail
+
+	err := json.NewDecoder(request.Body).Decode(&mail)
+	if err != nil {
+		respondWithJson(writer, http.StatusBadRequest, map[string]string{"message": err.Error()})
+		return
+	}
+
+	err = mail.IsValid()
+	if err != nil {
+		respondWithJson(writer, http.StatusBadRequest, map[string]string{"message": err.Error()})
+		return
+	}
+	respondWithJson(writer, http.StatusCreated, mail)
 }
 
 func main() {
@@ -47,4 +61,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func respondWithJson(w http.ResponseWriter, code int, payload interface{}) {
+	response, _ := json.Marshal(payload)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(response)
 }
