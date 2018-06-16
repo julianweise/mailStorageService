@@ -5,6 +5,11 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"log"
+	"mailStorageService/models"
+	"encoding/json"
+	"github.com/joho/godotenv"
+	"strconv"
+	"os"
 )
 
 func GetHealtEndPoint(writer http.ResponseWriter, request *http.Request) {
@@ -20,14 +25,25 @@ func PostMailEndPoint(writer http.ResponseWriter, request *http.Request) {
 }
 
 func main() {
+	// load configuration
+	err := godotenv.Load()
+	port, err := strconv.Atoi(os.Getenv("PORT"))
+	privateKey := os.Getenv("PRIVATE_KEY")
+	publicKey := os.Getenv("PUBLIC_KEY")
+	if err != nil {
+		log.Fatal("Unable to read configuration file.")
+	}
+
+
 	// Configure Router and Routes
 	router := mux.NewRouter()
-	router.HandleFunc("/health", GetHealtEndPoint).Methods("GET")
-	router.HandleFunc("/mailstore", GetAllMailsEndPoint).Methods("GET")
+	router.HandleFunc("/health", GetHealthEndPoint).Methods("GET")
+	router.HandleFunc("/mailstore", GetQueryMailsEndPoint).Methods("GET")
 	router.HandleFunc("/mailstore", PostMailEndPoint).Methods("POST")
 
 	// Serve
-	err := http.ListenAndServe(":3000", router)
+	fmt.Printf("MailStorageService ist listening on port %d. \n", port)
+	err = http.ListenAndServeTLS(":" + strconv.Itoa(port), publicKey, privateKey, router)
 	if err != nil {
 		log.Fatal(err)
 	}
