@@ -35,6 +35,7 @@ func PostMailEndPoint(writer http.ResponseWriter, request *http.Request) {
 		respondWithJson(writer, http.StatusBadRequest, map[string]string{"message": err.Error()})
 		return
 	}
+	// TODO: Add model storing
 	respondWithJson(writer, http.StatusCreated, mail)
 }
 
