@@ -11,7 +11,7 @@ type Mail struct {
 	ReceivedFrom 	string 			`bson:"received_from" json:"received_from,omitempty"`
 	ReceivedBy		string			`bson:"received_by" json:"received_by,omitempty"`
 	MailFrom		string			`bson:"mail_from" json:"mail_from,omitempty"`
-	RCPTTo			string			`bson:"rcpt_to" json:"rcpt_to,omitempty"`
+	RCPTTo			[]string		`bson:"rcpt_to" json:"rcpt_to,omitempty"`
 	Data			string			`bson:"data" json:"data,omitempty"`
 }
 
@@ -28,7 +28,7 @@ func (mail* Mail) IsValid() error {
 	if mail.MailFrom == "" {
 		return errors.New("mail_from should not be empty")
 	}
-	if mail.RCPTTo == "" {
+	if len(mail.RCPTTo) < 1 {
 		return errors.New("rcpt_to should not be empty")
 	}
 	if mail.Data == "" {
