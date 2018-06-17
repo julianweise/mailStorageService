@@ -10,9 +10,12 @@ import (
 	"github.com/joho/godotenv"
 	"strconv"
 	"os"
+	config2 "mailStorageService/config"
 )
 
-func GetHealthEndPoint(writer http.ResponseWriter, request *http.Request) {
+var config = config2.Config{}
+
+func GetHealthEndPoint(writer http.ResponseWriter, _ *http.Request) {
 	respondWithJson(writer, http.StatusOK, map[string]string{"status": "200", "message": "Service operational"})
 }
 
@@ -45,11 +48,16 @@ func main() {
 	port, err := strconv.Atoi(os.Getenv("PORT"))
 	privateKey := os.Getenv("PRIVATE_KEY")
 	publicKey := os.Getenv("PUBLIC_KEY")
+func init() {
+	// read configuration
+	err := config.Read()
 	if err != nil {
-		log.Fatal("Unable to read configuration file.")
+		log.Fatal("Unable to read configuration. Error: " + err.Error())
 	}
 
+}
 
+func main() {
 	// Configure Router and Routes
 	router := mux.NewRouter()
 	router.HandleFunc("/health", GetHealthEndPoint).Methods("GET")
@@ -57,8 +65,8 @@ func main() {
 	router.HandleFunc("/mailstore", PostMailEndPoint).Methods("POST")
 
 	// Serve
-	fmt.Printf("MailStorageService ist listening on port %d. \n", port)
-	err = http.ListenAndServeTLS(":" + strconv.Itoa(port), publicKey, privateKey, router)
+	fmt.Printf("MailStorageService ist listening on port %d. \n", config.Port)
+	err := http.ListenAndServeTLS(":" + strconv.Itoa(config.Port), config.PublicKey, config.PrivateKey, router)
 	if err != nil {
 		log.Fatal(err)
 	}
