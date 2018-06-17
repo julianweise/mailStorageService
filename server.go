@@ -24,6 +24,16 @@ func GetQueryMailsEndPoint(writer http.ResponseWriter, request *http.Request) {
 	fmt.Fprintln(writer, "not implemented yet!")
 }
 
+func GetAllMailsEndPoint(writer http.ResponseWriter, request *http.Request) {
+	mails, err := dao.SelectAll()
+	if err != nil {
+		respondWithJson(writer, http.StatusInternalServerError, map[string]string{"message": err.Error()})
+		return
+	}
+	respondWithJson(writer, http.StatusOK, mails)
+}
+
+
 func PostMailEndPoint(writer http.ResponseWriter, request *http.Request) {
 	defer request.Body.Close()
 	var mail models.Mail
@@ -73,7 +83,8 @@ func main() {
 	// Configure Router and Routes
 	router := mux.NewRouter()
 	router.HandleFunc("/health", GetHealthEndPoint).Methods("GET")
-	router.HandleFunc("/mailstore", GetQueryMailsEndPoint).Methods("GET")
+	// router.HandleFunc("/mailstore", GetQueryMailsEndPoint).Methods("GET")
+	router.HandleFunc("/mailstore", GetAllMailsEndPoint).Methods("GET")
 	router.HandleFunc("/mailstore", PostMailEndPoint).Methods("POST")
 
 	// Serve
