@@ -1,2 +1,5 @@
-#IDE
+# IDE
 .idea/
+
+# Build directory
+build/*
