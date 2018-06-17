@@ -1,14 +1,18 @@
 package models
 
-import "errors"
+import (
+	"errors"
+	"gopkg.in/mgo.v2/bson"
+)
 
 type Mail struct {
-	Received 		string 	`json:"received,omitempty"`
-	ReceivedFrom 	string 	`json:"received_from,omitempty"`
-	ReceivedBy		string	`json:"received_by,omitempty"`
-	MailFrom		string	`json:"mail_from,omitempty"`
-	RCPTTo			string	`json:"rcpt_to,omitempty"`
-	Data			string	`json:"data,omitempty"`
+	Id				bson.ObjectId	`bson:"_id" json:"id"`
+	Received 		string 			`bson:"received" json:"received,omitempty"`
+	ReceivedFrom 	string 			`bson:"received_from" json:"received_from,omitempty"`
+	ReceivedBy		string			`bson:"received_by" json:"received_by,omitempty"`
+	MailFrom		string			`bson:"mail_from" json:"mail_from,omitempty"`
+	RCPTTo			string			`bson:"rcpt_to" json:"rcpt_to,omitempty"`
+	Data			string			`bson:"data" json:"data,omitempty"`
 }
 
 func (mail* Mail) IsValid() error {
