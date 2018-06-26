@@ -27,7 +27,8 @@ func (m *MailsDAO) Connect() (err error) {
 }
 
 func (m *MailsDAO) Select(queryAttributes bson.M) (mails []models.Mail, err error) {
-	err = db.C(COLLECTION).Find(queryAttributtes).All(&mails)
+	err = db.C(COLLECTION).Find(queryAttributes).All(&mails)
+	return
 }
 
 func (m *MailsDAO) SelectAll() (mails []models.Mail, err error) {

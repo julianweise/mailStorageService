@@ -55,7 +55,11 @@ func GetQueryMailsEndPoint(writer http.ResponseWriter, request *http.Request) {
 			return
 		}
 	}
-	queryAttributes["received"] = bson.M{"$and": []bson.M{ bson.M{"$gte": receivedAfterTime}, bson.M{"lte": receivedBeforeTime} }}
+	queryAttributes["received"] = bson.M{"$and":
+		[]bson.M{
+			bson.M{"$gte": receivedAfterTime.Format(time.RFC3339)},
+			bson.M{"lte": receivedBeforeTime.Format(time.RFC3339)},
+	}}
 
 	senders := parseStringList(request.URL.Query().Get("mail_from"))
 	if len(senders) > 0 {
@@ -172,7 +176,7 @@ func main() {
 	// Configure Router and Routes
 	router := mux.NewRouter()
 	router.HandleFunc("/health", GetHealthEndPoint).Methods("GET")
-	// router.HandleFunc("/mailstore", GetQueryMailsEndPoint).Methods("GET")
+	router.HandleFunc("/mailstore", GetQueryMailsEndPoint).Methods("GET")
 	router.HandleFunc("/mailstore", GetAllMailsEndPoint).Methods("GET")
 	router.HandleFunc("/mailstore", PostMailEndPoint).Methods("POST")
 
