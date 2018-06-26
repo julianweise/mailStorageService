@@ -7,7 +7,7 @@ import (
 
 type Mail struct {
 	Id				bson.ObjectId	`bson:"_id" json:"id"`
-	Received 		string 			`bson:"received" json:"received,omitempty"`
+	Received 		string	 		`bson:"received" json:"received,omitempty"`
 	ReceivedFrom 	string 			`bson:"received_from" json:"received_from,omitempty"`
 	ReceivedBy		string			`bson:"received_by" json:"received_by,omitempty"`
 	MailFrom		string			`bson:"mail_from" json:"mail_from,omitempty"`
@@ -17,7 +17,7 @@ type Mail struct {
 
 func (mail* Mail) IsValid() error {
 	if mail.Received == "" {
-		return errors.New("receive should not be empty")
+		return errors.New("received should not be empty")
 	}
 	if mail.ReceivedFrom == "" {
 		return errors.New("received_from should not be empty")
