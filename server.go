@@ -21,7 +21,11 @@ func GetHealthEndPoint(writer http.ResponseWriter, _ *http.Request) {
 }
 
 func GetQueryMailsEndPoint(writer http.ResponseWriter, request *http.Request) {
-	fmt.Fprintln(writer, "not implemented yet!")
+	queryAttributes := bson.M{}
+	rcptTo := request.URL.Query().Get("rcpt_to")
+	if len(rcptTo) > 0 {
+		queryAttributes["rcpt_tp"] = rcptTo
+	}
 }
 
 func GetAllMailsEndPoint(writer http.ResponseWriter, request *http.Request) {
