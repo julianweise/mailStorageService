@@ -15,6 +15,24 @@ import (
 	"time"
 )
 
+type MailListResponse struct {
+	MailList	[]models.Mail	`json:"mail_list"`
+}
+
+func NewMailListResponse() MailListResponse {
+	response := MailListResponse{}
+	response.MailList = make([]models.Mail, 0)
+	return response
+}
+
+func (this *MailListResponse) SetMailList(mails []models.Mail) {
+	if mails == nil || len(mails) <= 0 {
+		return
+	}
+
+	this.MailList = mails
+}
+
 var dao = dao2.MailsDAO{}
 var config = config2.Config{}
 
@@ -23,6 +41,11 @@ func GetHealthEndPoint(writer http.ResponseWriter, _ *http.Request) {
 }
 
 func GetQueryMailsEndPoint(writer http.ResponseWriter, request *http.Request) {
+	if len(request.URL.Query().Encode()) <= 0 {
+		GetAllMailsEndPoint(writer, request)
+		return
+	}
+
 	var err error
 	responseLimit := 1024
 	responseOffset := 0
@@ -33,6 +56,7 @@ func GetQueryMailsEndPoint(writer http.ResponseWriter, request *http.Request) {
 		queryAttributes["_id"] = bson.M{"$in": ids}
 	}
 
+	/*
 	receivedBeforeTime := time.Now()
 	receivedAfterTime := time.Time{}
 
@@ -55,11 +79,15 @@ func GetQueryMailsEndPoint(writer http.ResponseWriter, request *http.Request) {
 			return
 		}
 	}
-	queryAttributes["received"] = bson.M{"$and":
+
+	log.Printf("received after '%s'   received before '%s'", receivedAfterTime, receivedBeforeTime)
+
+	queryAttributes["received"] = bson.M{"received": bson.M{"$and":
 		[]bson.M{
-			bson.M{"$gte": receivedAfterTime.Format(time.RFC3339)},
-			bson.M{"lte": receivedBeforeTime.Format(time.RFC3339)},
-	}}
+			bson.M{"received": bson.M{"$gt": receivedAfterTime}},
+			bson.M{"received": bson.M{"$lt": receivedBeforeTime}},
+	}}}
+	*/
 
 	senders := parseStringList(request.URL.Query().Get("mail_from"))
 	if len(senders) > 0 {
@@ -95,23 +123,20 @@ func GetQueryMailsEndPoint(writer http.ResponseWriter, request *http.Request) {
 		responseOffset = max(responseOffset, 0)
 	}
 
+	log.Printf("query: '%s'", queryAttributes)
 	mails, err := dao.Select(queryAttributes)
 	if err != nil {
 		respondWithJson(writer, http.StatusInternalServerError, map[string]string{"message": "unable to fetch from database: " + err.Error()})
 		return
 	}
 
-	type Response struct {
-		MailList	[]models.Mail	`json:"mail_list"`
-	}
-
-	response := Response{}
+	response := NewMailListResponse()
 
 	startIndex := limit(0, len(mails), responseOffset)
 	endIndex := limit(0, len(mails), min(len(mails), responseLimit))
 
 	if endIndex - startIndex > 0 {
-		response.MailList = mails[startIndex:endIndex]
+		response.SetMailList(mails[startIndex:endIndex])
 	}
 
 	respondWithJson(writer, http.StatusOK, response)
@@ -123,7 +148,11 @@ func GetAllMailsEndPoint(writer http.ResponseWriter, request *http.Request) {
 		respondWithJson(writer, http.StatusInternalServerError, map[string]string{"message": err.Error()})
 		return
 	}
-	respondWithJson(writer, http.StatusOK, mails)
+
+	response := MailListResponse{}
+	response.SetMailList(mails)
+
+	respondWithJson(writer, http.StatusOK, response)
 }
 
 
@@ -146,13 +175,14 @@ func PostMailEndPoint(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// insert into database
-	mail.Id = bson.NewObjectId()
+	mail.Id = bson.NewObjectId().Hex()
 	err = dao.Insert(mail)
 	if err != nil {
 		respondWithJson(writer, http.StatusInternalServerError, map[string]string{"message": err.Error()})
 		return
 	}
 
+	log.Printf("stored mail with id = '%s'", mail.Id)
 	respondWithJson(writer, http.StatusCreated, mail)
 }
 
@@ -196,10 +226,14 @@ func respondWithJson(w http.ResponseWriter, code int, payload interface{}) {
 }
 
 func parseTime(timeString string) (time.Time, error) {
-	return time.Parse("2006-01-02T15:04:05Z07:00", timeString)
+	return time.Parse(time.RFC3339, timeString)
 }
 
 func parseStringList(input string) []string {
+	if len(input) <= 0 {
+		return []string{}
+	}
+
 	return strings.Split(input, "|")
 }
 

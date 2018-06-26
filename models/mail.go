@@ -2,12 +2,11 @@ package models
 
 import (
 	"errors"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type Mail struct {
-	Id				bson.ObjectId	`bson:"_id" json:"id"`
-	Received 		string	 		`bson:"received" json:"received,omitempty"`
+	Id				string			`bson:"_id" json:"id"`
+	Received 		string			`bson:"received" json:"received,omitempty"`
 	ReceivedFrom 	string 			`bson:"received_from" json:"received_from,omitempty"`
 	ReceivedBy		string			`bson:"received_by" json:"received_by,omitempty"`
 	MailFrom		string			`bson:"mail_from" json:"mail_from,omitempty"`
@@ -36,3 +35,36 @@ func (mail* Mail) IsValid() error {
 	}
 	return nil
 }
+
+/*
+func NewMail(input []byte) (mail Mail, err error) {
+	type StringMail struct {
+		Received 		string			`json:"received,omitempty"`
+		ReceivedFrom 	string 			`json:"received_from,omitempty"`
+		ReceivedBy		string			`json:"received_by,omitempty"`
+		MailFrom		string			`json:"mail_from,omitempty"`
+		RCPTTo			[]string		`json:"rcpt_to,omitempty"`
+		Data			string			`json:"data,omitempty"`
+
+	}
+
+	var rawMail StringMail
+	mail = Mail{}
+
+	err = json.Unmarshal(input, &rawMail)
+	if err != nil {
+		return mail, err
+	}
+
+	log.Printf("received: '%s'", rawMail)
+
+	mail.Received = time.Now()
+	mail.ReceivedBy = rawMail.ReceivedBy
+	mail.ReceivedFrom = rawMail.ReceivedFrom
+	mail.MailFrom = rawMail.MailFrom
+	mail.RCPTTo = rawMail.RCPTTo
+	mail.Data = rawMail.Data
+
+	return
+}
+*/
